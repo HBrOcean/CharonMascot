@@ -47,7 +47,7 @@ jobs:
           test -f out/Assets/characters/312801/312801.skel
           test -f out/Assets/icons/app.png
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CharonMascot-${{ matrix.rid }}
           path: out/
