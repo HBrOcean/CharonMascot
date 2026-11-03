@@ -1,0 +1,29 @@
+# 构建产物
+bin/
+obj/
+dist/
+publish/
+out/
+*.pdb
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+*.DotSettings.user
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 工具产生的中间文件
+tools/_icon_src.webp
+
+# 本地测试用的模型/配置
+*.local.json
