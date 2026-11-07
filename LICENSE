@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 暅汐 (Oceaniat)
+Copyright (c) 2026 HBrOcean
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +20,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
----------------------------------------------------------------------------
-NOTE ON ASSETS
----------------------------------------------------------------------------
-The above MIT license covers the source code of this project only.
+---
 
-All character artwork, spine skeletal data, textures and other game assets
-under src/CharonMascot/Assets/characters/ are the property of Bluepoch
-(深蓝互动) and were retrieved from the UTTU Archive fan database
-(https://uttu.merui.net). They are included here solely for personal,
-non-commercial, educational use, and are NOT covered by the MIT license.
-
-The bundled spine-csharp runtime under src/CharonMascot/Spine/ is
-Copyright (c) Esoteric Software LLC and is distributed under the
-Spine Runtimes License Agreement (see the header of each file).
-
-If you are a rights holder and want any asset removed, please open an issue.
+Assets notice:
+The Spine character models under Assets/characters/ (311801 / 311802 / 311803)
+and the character artwork/icon under Assets/icons/ are game assets from
+"Reverse: 1999 / UTTU" (命名日 series). They are NOT covered by the MIT license
+above and remain the property of their respective copyright holders.
+They are included here for personal, non-commercial use only.

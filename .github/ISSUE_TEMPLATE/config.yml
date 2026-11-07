@@ -1,5 +1,0 @@
-blank_issues_enabled: true
-contact_links:
-  - name: 常见问题与踩坑记录
-    url: https://github.com/HBrOcean/CharonMascot/blob/main/GUIDE.md
-    about: 渲染、素材、Avalonia 相关的坑都记在这里

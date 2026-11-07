@@ -1,170 +1,144 @@
 # CharonMascot · 卡戎桌宠
 
-> Reverse: 1999 角色 **卡戎（Charon）** 的桌面宠物。透明置顶、Spine 骨骼实时渲染、点击互动、三套装扮。
-> 用 C# + Avalonia 复刻 [NameDayMascot](https://github.com/HBrOcean/NameDayMascot) 的桌面宠物形态。
+《重返未来：1999》卡戎的桌面分身。透明无边框、可置顶或置底、随手拖到屏幕任何角落，单击会动，也能绑全局快捷键遥控。
 
-[![build](https://github.com/HBrOcean/CharonMascot/actions/workflows/build.yml/badge.svg)](https://github.com/HBrOcean/CharonMascot/actions/workflows/build.yml)
-[![release](https://img.shields.io/github/v/release/HBrOcean/CharonMascot?color=6a5acd)](https://github.com/HBrOcean/CharonMascot/releases)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-2f6fb3.svg)](#-快速开始)
-[![.NET](https://img.shields.io/badge/.NET-10.0-512bd4.svg)](https://dotnet.microsoft.com/)
+| | |
+|---|---|
+| **技术栈** | .NET 10 · Avalonia 11.3 · spine-csharp 4.2 · SkiaSharp · SharpHook |
+| **平台** | Windows（完整功能）· macOS / Linux 可运行，窗口特效与开机自启仅 Windows 生效 |
 
-![预览](docs/screenshots/preview.png)
+## 下载
 
----
+到 [Releases](https://github.com/HBrOcean/CharonMascot/releases) 下载 `CharonMascot-win-x64.zip`，解压后双击 `CharonMascot.exe`。
 
-## ✨ 功能
+自包含单文件，**不需要另外安装 .NET 运行时**。
 
-- **实时 Spine 渲染**：直接加载官方 `.skel / .atlas` 骨骼数据，不是预渲染帧，放到 400% 也不糊。
-- **三套装扮**：默认 / 沉默与悲鸣 / 亡者的恩赐，右键菜单或设置面板随时切换，无需重启。
-- **一整套动作**：待机、登场、换装、定格、开心、受击、姿势、技能一/二/三、睡觉、专属、退场。
-- **点击互动**：左键单击随机播放一个动作，播完自动回待机。
-- **空闲表演**：闲置一段时间自己随机做动作（间隔可调，可关闭）。
-- **拖拽 & 缩放**：左键拖动换位置；菜单或滑杆 50%–400%；`Ctrl + 滚轮` 快速微调。
-- **透明置顶**：无边框、无背景、始终置顶、不占任务栏；可一键锁定位置防误拖。
-- **全局热键**：`Ctrl+Alt+H` 显隐、`Ctrl+Alt+S` 设置、`Ctrl+Alt+Q` 退出。
-- **一键截图**：右键「保存截图…」把当前帧存成 PNG。
-- **配置持久化**：装扮、缩放、位置、开关项自动保存。
+## 特性
 
-## 🖱 操作一览
+- 30fps 实时渲染 Spine 动画，透明背景，默认不占任务栏
+- 冷启动播一遍入场动画，之后自然转入待机（换皮肤不再播入场，不会有"换皮时往左上飘"的错觉）
+- 拖动移动、位置记忆；**允许拖到屏幕外**，贴边不回弹
+- 单击播放一个动作，播完自动回待机
+- 定时随机动作：默认每 20 秒自己动一下，间隔 5~180 秒可调，可整开关
+- 窗口随动作幅度自动长高长宽（视框扩张立即生效、收缩延迟 1 秒），脚的落点始终不动
+- 右键菜单 / 托盘菜单双入口：设置、播放动作、切皮肤、隐藏、重置位置、退出
+- 皮肤自动扫描目录，设置面板里以卡片网格呈现（带缩略图）
+- 全局快捷键可视化编辑，支持一个按键绑定多个动作（随机播一个）
+- 单实例保护：重复启动会唤醒已有实例，不会开出第二只
 
-| 操作 | 效果 |
-| --- | --- |
-| 左键拖动 | 移动窗口（未锁定时） |
-| 左键单击 | 随机播放一个动作 |
-| 右键单击 | 菜单：动作 / 装扮 / 缩放 / 置顶 / 锁定 / 截图 / 设置 / 退出 |
-| `Ctrl` + 滚轮 | 缩放 ±10% |
-| `Ctrl+Alt+H` | 显示 / 隐藏桌宠 |
-| `Ctrl+Alt+S` | 打开设置面板 |
-| `Ctrl+Alt+Q` | 退出程序 |
+## 三种"动"的规则
 
-## 🚀 快速开始
+容易被搞混，先说清楚：
 
-### 直接用（推荐）
+| 触发方式 | 播什么 |
+|---|---|
+| **单击 / 右键菜单 / 托盘 / 快捷键** | 若配置了「点击动作」就播它，否则从池子里随机 |
+| **定时器（每 20 秒）** | **完全忽略**「点击动作」配置，纯随机 —— 否则配了固定动作后定时器每次都在重播同一个 |
+| **待机** | 播完一次性动作后回到 `idle`（可在设置里改成别的动画） |
 
-到 [Releases](https://github.com/HBrOcean/CharonMascot/releases) 下载对应平台的压缩包，解压后双击运行。
-`Assets` 目录必须和可执行文件放在同一层。
+- 随机池排除状态型动画：`idle` / `born` / `sleep` / `die` / `posture`
+- 连续两次不会抽到同一个
+- 任何一次手动动作都会把定时器重新计时，不会出现"刚点完两秒又被催一下"
 
-> Windows 首次运行可能弹出「Windows 已保护你的电脑」，点「更多信息 → 仍要运行」即可
-> —— 这是未签名程序的常规提示。
+## 默认快捷键
 
-### 自己编译
+全部为 `Ctrl + 键`，可在「设置 → 按键」里改，支持 `Ctrl+Shift+A` 这类多修饰组合。
 
-需要 **.NET SDK 10.0 或更高**。
+| 快捷键 | 动作 | 快捷键 | 动作 |
+|---|---|---|---|
+| `Ctrl + Y` | 打开设置面板 | `Ctrl + G` | giddy |
+| `Ctrl + N` | 关闭设置面板 | `Ctrl + H` | hit |
+| `Ctrl + 1` | skill1 | `Ctrl + I` | idle |
+| `Ctrl + 2` | skill2 | `Ctrl + P` | posture |
+| `Ctrl + D` | die | `Ctrl + S` | sleep |
+| `Ctrl + Q` | unique | `Ctrl + B` | born |
 
-```bash
-git clone https://github.com/HBrOcean/CharonMascot.git
-cd CharonMascot/src/CharonMascot
-dotnet run
-```
+> 全局钩子只监听、不拦截。在编辑器里按 `Ctrl+S` / `Ctrl+B` 会同时触发编辑器自身功能，介意就改成 `Ctrl+Shift+字母`。
 
-发布单文件可执行程序：
+## 皮肤
+
+**没有任何硬编码列表**：启动时扫描 `Assets/characters/` 下的每个子目录，目录名即皮肤 ID，凑齐同名的 `.atlas` + `.skel` 即为可用皮肤。删掉目录，它就自动从列表消失。
+
+当前附带卡戎的三套装扮：
+
+| ID | 名称 |
+|---|---|
+| 312801 | 默认 |
+| 312802 | 沉默与悲鸣 |
+| 312803 | 亡者的恩赐 |
+
+### 显示名的三级兜底
+
+1. `config.json` 里的 `SkinNames`（`{"312801": "默认"}`，改完重启生效）
+2. 皮肤目录里的 `display.txt`（UTF-8，第一行即名字）
+3. 目录名
+
+### 添加自己的皮肤
+
+1. 在 `Assets/characters/` 下新建子目录，目录名就是皮肤 ID
+2. 放入同名文件：`<id>.atlas`、`<id>.skel`，以及 atlas 里声明的图集
+3. 想要自定义显示名，放一个 `display.txt`
+4. 设置 → **皮肤** → 「刷新列表」
+
+资源不齐的皮肤会**置灰并标注「资源缺失」**，点不动，也不会让列表变空。
+
+缩略图是运行时用同一套渲染器离屏渲的（图集是散件拼图，不能直接当预览图），首次缓存到配置目录；换模型后对不上就点「重建预览图」。
+
+## 配置
+
+配置文件：`%AppData%\CharonMascot\config.json`（macOS / Linux 为 `~/.config/CharonMascot/`）
+日志：同目录 `log.txt`，排查问题先看它。
+
+几乎所有选项都能在设置面板里改。手改 JSON 也是支持的，改完重启生效。
+
+## 从源码构建
+
+需要 [.NET 10 SDK](https://dotnet.microsoft.com/download)。
 
 ```bash
 # Windows
 build.bat
 
-# Linux / macOS
-./build.sh linux-x64     # 或 osx-arm64
+# macOS / Linux
+chmod +x build.sh && ./build.sh
+
+# 或者直接跑
+dotnet run
 ```
 
-产物在 `dist/<rid>/`。
+打包成自包含单文件：
 
-## 🧱 技术栈
-
-| 组件 | 用途 |
-| --- | --- |
-| .NET 10 + Avalonia 11.3 | 跨平台窗口、透明无边框 UI |
-| spine-csharp 4.2（源码内置） | 骨骼解析、动画状态机 |
-| SkiaSharp 2.88 | 逐三角形仿射绘制骨骼网格 |
-| SharpHook 6.2 | 全局键盘热键 |
-| System.Text.Json | 配置读写 |
-
-渲染这块踩过的坑（`DrawVertices` 会碎、UV 不能翻转、`ComputeWorldVertices` 的 count 语义…）
-全部写在 [GUIDE.md](GUIDE.md)，想看细节可以直接翻。
-
-## 📁 目录结构
-
-```
-CharonMascot/
-├─ src/CharonMascot/
-│  ├─ Program.cs / App.cs           # 入口
-│  ├─ AppHost.cs                    # 中枢：配置、模型、窗口、热键
-│  ├─ PetWindow.cs                  # 透明置顶窗口、右键菜单、拖拽/缩放/点击
-│  ├─ PetControl.cs                 # SkiaSharp 绘制 Spine 骨架
-│  ├─ SettingsWindow.cs             # 设置面板（纯代码 UI）
-│  ├─ HotkeyService.cs              # 全局热键
-│  ├─ Config.cs                     # 配置持久化
-│  ├─ SpineRuntime/SkeletonModel.cs # 模型加载、包围盒、动画
-│  ├─ Spine/                        # spine-csharp 4.2 官方源码
-│  └─ Assets/characters/<id>/       # 角色素材（skel / atlas / png）
-├─ tools/fetch_assets.py            # 从 UTTU 下载素材
-├─ tools/make_icons.py              # 生成应用图标
-├─ build.bat / build.sh             # 一键构建
-├─ push.bat / push.sh               # 一键推送到 GitHub
-└─ docs/screenshots/                # 预览图
+```bash
+dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true
 ```
 
-## 🎭 换角色 / 做自己的桌宠
+推到 GitHub 后 Actions 会在 `windows-latest` 上自动构建；打 `v*` 标签会额外发 Release：
 
-1. 在 `tools/fetch_assets.py` 里把 `GARMENTS` 改成目标角色的 garmentId；
-2. `AppHost.Garments` 同步修改；
-3. `tools/make_icons.py` 改一下头像地址，生成新图标；
-4. `dotnet run` 看效果。
+```bash
+git tag v1.3.0
+git push origin v1.3.0
+```
 
-素材接口规律（Q 版 Spine / 立绘 / 头像的直链格式）见 [GUIDE.md](GUIDE.md) 第 1 节。
+## 常见问题
 
-## ❓ 常见问题
+**桌宠不见了**
+先看托盘图标（可能被系统折叠进「隐藏的图标」）。窗口允许拖到屏幕外，所以托盘菜单里的「重置位置（拉回主屏右下角）」是唯一永远点得到的自救入口。
 
-<details>
-<summary>启动后什么都没有？</summary>
+**窗口大小会自己变**
+那是「动态尺寸」：动作幅度大时窗口临时长大，动作结束约 1 秒后慢慢缩回。不想要就在设置里关掉。
 
-- 检查 `Assets` 目录是否和 exe 在同一层（少了它会启动失败）。
-- 程序可能被隐藏了，按 `Ctrl+Alt+H` 唤回。
-- 看屏幕右下角，默认出现在那里。
-</details>
+**快捷键没反应**
+看 `log.txt` 里有没有 `[Key] 匹配 ...`。没有就说明按键被系统或其他软件吞了；有记录但不触发，检查格式是否为 `修饰键 + Vc键名`（如 `Ctrl+Vc1`），设置面板里格式错误会标红。
 
-<details>
-<summary>角色一大片透明 / 颜色很脏？</summary>
+**换了皮肤，某些快捷键不动了**
+不同角色动画名不一定通用。绑定里失效的动作会变红，重选即可。
 
-旧版本（v1.0.0）有这个问题，v1.1.0 已修复 —— 见 [CHANGELOG](CHANGELOG.md)。
-请确认用的是 Releases 里最新的包。
-</details>
+**开了鼠标穿透后拖不动**
+穿透模式下点击落到下层窗口。用托盘菜单关掉。
 
-<details>
-<summary>热键没反应？</summary>
+## 许可
 
-全局热键依赖 SharpHook。极少数安全软件会拦截键盘钩子，把程序加入白名单即可；
-菜单里的操作不受影响。
-</details>
+代码 MIT（见 [LICENSE](LICENSE)）。`Assets/` 下的角色素材不在 MIT 范围内，版权归原权利方，仅供个人非商业使用。
 
-<details>
-<summary>配置在哪？想恢复默认怎么办？</summary>
-
-`%APPDATA%\CharonMascot\config.json`（Linux/macOS 在 `~/.config/CharonMascot/`）。
-删掉这个文件就是恢复默认。设置面板里也有「配置目录」按钮直接打开。
-</details>
-
-## 🤝 贡献
-
-欢迎 Issue 和 PR，动手前可以看一眼 [CONTRIBUTING.md](CONTRIBUTING.md)。
-
-## 📄 许可
-
-- **代码**：[MIT](LICENSE)
-- **角色素材**（`Assets/characters/`）：版权归 Bluepoch（深蓝互动）所有，取自
-  [UTTU Archive](https://uttu.merui.net/profiles/charon/)，仅作个人学习交流，**不可商用、不可二次分发**。
-- **spine-csharp**（`Spine/`）：Copyright © Esoteric Software LLC，遵循 Spine Runtimes License。
-
-如果你是权利方且希望移除相关内容，请开 Issue，会尽快处理。
-
-## 🙏 致谢
-
-- [NameDayMascot](https://github.com/HBrOcean/NameDayMascot) —— 架构与交互的参考原型
-- [UTTU Archive](https://uttu.merui.net) —— 素材数据库
-- [Esoteric Software](http://esotericsoftware.com/) —— Spine 运行时
-- [Avalonia](https://avaloniaui.net/) / [SkiaSharp](https://github.com/mono/SkiaSharp) —— 跨平台 UI 与图形
-
----
-
-<p align="center">如果这只卡戎陪到了你，点个 ⭐ 呗</p>
+- Spine 运行时来自 [esotericsoftware/spine-runtimes](https://github.com/esotericsoftware/spine-runtimes)（spine-csharp 4.2），遵循 Spine Runtime License
+- 角色素材来自 UTTU Archive（《重返未来：1999》卡戎）

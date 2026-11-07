@@ -1,29 +1,41 @@
-# 构建产物
+# ---- .NET / Avalonia build outputs ----
 bin/
 obj/
-dist/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
 publish/
-out/
+artifacts/
+*.dll
+*.exe
 *.pdb
+*.deps.json
+*.runtimeconfig.json
 
-# IDE
+# ---- Local NuGet ----
+packages/
+*.nupkg
+nuget.exe
+
+# ---- IDE ----
 .vs/
+.vscode/
 .idea/
 *.user
 *.suo
+*.userprefs
 *.DotSettings.user
+*.sln.docstates
 
-# 系统文件
-.DS_Store
+# ---- OS ----
 Thumbs.db
-desktop.ini
+Desktop.ini
+.DS_Store
 
-# Python 缓存
-__pycache__/
-*.pyc
+# ---- Logs / temp ----
+*.log
+log.txt
 
-# 工具产生的中间文件
-tools/_icon_src.webp
-
-# 本地测试用的模型/配置
-*.local.json
+# ---- 保留模型与图标资源（Assets/ 下的 .atlas/.skel/.png/.ico 必须提交）----
+!Assets/**

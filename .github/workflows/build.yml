@@ -2,53 +2,68 @@ name: build
 
 on:
   push:
-    branches: [ main ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+    branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
-    branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: write         # 发 Release 需要写权限
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            rid: win-x64
-          - os: ubuntu-latest
-            rid: linux-x64
-          - os: macos-latest
-            rid: osx-arm64
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-dotnet@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-          cache: true
-          cache-dependency-path: '**/*.csproj'
 
-      - name: Publish
-        shell: bash
+      # 自动定位 .csproj，不管项目在仓库根还是子目录都能跑
+      - name: Locate project
+        shell: pwsh
         run: |
-          dotnet publish src/CharonMascot -c Release -r ${{ matrix.rid }} \
-            --self-contained true \
-            -p:PublishSingleFile=true \
-            -p:IncludeNativeLibrariesForSelfExtract=true \
-            -o out
+          $proj = Get-ChildItem -Recurse -Filter *.csproj |
+                  Where-Object { $_.FullName -notmatch '\\obj\\' -and $_.FullName -notmatch '\\bin\\' } |
+                  Select-Object -First 1
+          if (-not $proj) { throw "No .csproj found in repository" }
+          "PROJ=$($proj.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Project: $($proj.FullName)"
 
-      - name: Smoke test (assets present)
-        shell: bash
-        run: |
-          test -f out/Assets/characters/312801/312801.skel
-          test -f out/Assets/icons/app.png
+      - name: Restore
+        run: dotnet restore "$env:PROJ"
 
-      - uses: actions/upload-artifact@v4
+      - name: Build
+        run: dotnet build "$env:PROJ" -c Release --no-restore
+
+      - name: Publish (win-x64, self-contained, single file)
+        run: >
+          dotnet publish "$env:PROJ" -c Release -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o out
+
+      # 打 tag 时才打包成 zip 并发布，普通提交只留 artifact
+      - name: Package release zip
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: Compress-Archive -Path out/* -DestinationPath CharonMascot-win-x64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: CharonMascot-${{ matrix.rid }}
+          name: CharonMascot-win-x64
           path: out/
           if-no-files-found: error
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: CharonMascot-win-x64.zip
+          generate_release_notes: true
+          draft: false

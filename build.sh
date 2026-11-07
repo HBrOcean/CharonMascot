@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# 一键构建 CharonMascot（Linux/macOS）
+# CharonMascot (C#) - macOS / Linux 构建脚本
 set -e
 cd "$(dirname "$0")"
-RID="${1:-linux-x64}"
-OUT="dist/${RID}"
-echo "== 还原依赖"
-dotnet restore src/CharonMascot
-echo "== 发布 ${RID}"
-dotnet publish src/CharonMascot -c Release -r "${RID}" --self-contained true \
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true \
-  -o "${OUT}"
-echo "== 完成：${OUT}"
+
+if ! command -v dotnet >/dev/null 2>&1; then
+  echo "未找到 dotnet，请安装 .NET 10 SDK"
+  exit 1
+fi
+
+dotnet build -c Release
+echo "构建完成，运行："
+echo "  dotnet run -c Release"

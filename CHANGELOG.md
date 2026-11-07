@@ -1,28 +1,48 @@
-# Changelog
+# 更新日志
 
-本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
+## 1.3.0 — 2026-11-07
 
-## [1.1.0] - 2026-11-02
+全面对齐 NameDayMascot 的成熟实现，同时补齐几处长期存在的体验缺陷。
 
-### Fixed
-- **重写渲染管线**：`SKCanvas.DrawVertices` 在 SkiaSharp 2.88.9 上会把 Spine 网格的贴图采样搞乱
-  （角色碎成一堆色块），改为照 spine-canvas 的思路**逐三角形求仿射矩阵 + clip + drawBitmap**，
-  渲染恢复正常，270px 高的窗口每帧约 5~8ms。
-- 贴图改用 `SKCodec` 显式按 `Bgra8888 + Unpremul` 解码，保证 alpha 通道完整，边缘不再发脏。
-- 修复 312802「沉默与悲鸣」部件散开的问题（与上条同源）。
-- 修复配置文件里 `WindowX/WindowY` 为 `null` 时整个配置反序列化失败、设置被重置的问题（改用 `double?`）。
+### 皮肤系统
+- 取消硬编码皮肤列表，**列表完全等于 `Assets/characters/` 的目录内容**，增删目录即可增删皮肤，不需要改代码
+- 显示名改为三级兜底：`config.json` 的 `SkinNames` → 目录里的 `display.txt` → 目录名
+- 皮肤选择独立成「皮肤」页签，卡片网格 + 运行时离屏渲染的缩略图
+- 资源缺失（缺 `.atlas` / `.skel`）的皮肤置灰、标注「资源缺失」、不可点击
 
-### Added
-- 右键菜单「保存截图…」，图片存到 `图片\CharonMascot\`。
-- `push.bat` / `push.sh` 一键推送脚本。
-- `LICENSE`、`CONTRIBUTING.md`、`.gitattributes`、`.editorconfig`、Issue 模板、Release 工作流。
-- 文档：`GUIDE.md` 补充渲染踩坑记录，`docs/` 放预览图。
+### 动作
+- 定时随机动作与「点击动作」配置彻底解耦：定时器忽略配置，走纯随机
+- 随机池排除 `idle` / `born` / `sleep` / `die` / `posture` 等状态型动画，连续两次不重复
+- 间隔 5~180 秒可调，任何一次手动动作都会重新计时
 
-## [1.0.0] - 2026-11-01
+### 渲染与窗口几何
+- 包围盒改为逐帧 49 帧采样 + 10%/90% 分位保护，避免个别动画把骨架位移到远处而撑大包围盒
+- 绘制比例只由「用户缩放 × DPI」决定，与窗口尺寸解耦，消除缩放反馈环
+- 视框以当前帧顶点对称扩张，扩张立即生效、收缩延迟 1 秒
+- resize 一律锚定「窗口底边中点」，并先 `UpdateLayout()` 再移位置，消除一两帧的 ΔH/2 偏移
+- 删除全部屏幕钳制代码，允许把桌宠拖到屏幕外；吸附默认关闭；启动救援阈值放宽到「露出一个像素」
+- 新增角色锚点：`AnchorX` 取头部带顶点 x 中位数、`AnchorY` 取待机顶点 y 的 2% 分位，几套皮肤按脑袋与脚对齐
+- 换皮肤不再播 `born`（入场动画），改为 `PlayIntro(withBorn: false)`
 
-### Added
-- 首个版本：卡戎（Charon）桌宠，C# / Avalonia 复刻 NameDayMascot 架构。
-- 透明置顶窗口、Spine 骨骼实时渲染、三套装扮、12 个动作。
-- 左键拖动 / 单击互动、右键菜单、`Ctrl+滚轮` 缩放、全局热键（`Ctrl+Alt+H / S / Q`）。
-- 配置持久化到 `%APPDATA%\CharonMascot\config.json`。
-- 三平台 GitHub Actions 构建工作流。
+### 交互
+- 右键菜单：设置 / 播放动作 / 重置位置 / 隐藏 / 退出
+- 托盘菜单：显示隐藏 / 皮肤子菜单 / 播放动作子菜单 / 重置位置 / 设置 / 退出
+- 二次启动唤醒已有实例，不再静默退出
+- 按键绑定可视化编辑：两行卡片、动画名下拉、chip 标签、非法格式标红、一键恢复默认
+
+### 工程
+- `Spine/` 目录改用 `.editorconfig` 按目录关闭可空性诊断（`<Compile Update><Nullable>disable</Nullable>` 这种写法对 per-file 元数据无效），`NoWarn` 兜底
+- 修掉 `Data.Animations[0]`（`ExposedList<T>` 该版本无公开索引器），改 `foreach` 取首个
+- CI 支持 `v*` 标签触发并自动发 Release
+- 推送脚本移入 `tools/`，`push.bat` 支持自定义提交信息，缺省用带日期的默认值
+
+## 1.2.0
+
+- 三套装扮素材接入，图集 webp → PNG，atlas 页名同步修正
+- 渲染管线改为 `SKImage` + `SKShader.CreateImage`，顶点色直通（不预乘）+ `DrawVertices(Modulate)`
+- 修复 mesh 顶点计算参数（`ComputeWorldVertices` 的 count 传 `WorldVerticesLength`）
+- 托盘、开机自启、单实例、日志、`--dump` 诊断
+
+## 1.1.0
+
+- 首个可运行版本

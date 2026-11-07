@@ -1,47 +1,21 @@
 @echo off
-setlocal
+rem CharonMascot (C#) - Windows build script
 cd /d "%~dp0"
 
-set "RID=%~1"
-if "%RID%"=="" set "RID=win-x64"
-set "OUT=dist\%RID%"
+dotnet --version >nul 2>&1
+if errorlevel 1 (
+  echo [ERROR] dotnet not found. Please install .NET 10 SDK.
+  pause
+  exit /b 1
+)
 
-echo ==========================================
-echo   CharonMascot build  (RID=%RID%)
-echo ==========================================
-
-where dotnet >nul 2>&1
-if errorlevel 1 goto NO_DOTNET
-
-echo [1/2] restore
-dotnet restore src\CharonMascot
-if errorlevel 1 goto FAIL
-
-echo [2/2] publish
-dotnet publish src\CharonMascot -c Release -r %RID% --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "%OUT%"
-if errorlevel 1 goto FAIL
-
-if not exist "%OUT%\CharonMascot.exe" goto FAIL
+dotnet build -c Release
+if errorlevel 1 (
+  echo [ERROR] Build failed. See messages above.
+  pause
+  exit /b 1
+)
 
 echo.
-echo ==========================================
-echo   OK  -^>  %OUT%\CharonMascot.exe
-echo ==========================================
-echo.
+echo [OK] Build succeeded. Run: dotnet run -c Release
 pause
-exit /b 0
-
-:NO_DOTNET
-echo.
-echo [ERROR] dotnet not found.
-echo         Install .NET SDK 10.0 or newer: https://dotnet.microsoft.com/download
-echo.
-pause
-exit /b 1
-
-:FAIL
-echo.
-echo [ERROR] build failed. See messages above.
-echo.
-pause
-exit /b 1
